@@ -2,7 +2,24 @@ import csv
 import argparse
 from datetime import datetime
 import ast
-batch = "A"
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-f', '--file', help='enter filename with csv. optional - if not provided, the script will ask for input')
+parser.add_argument('-b', '--batch', help='Batch letter to name outputs. optional - if not provided, the script will ask for input')
+args = parser.parse_args()
+
+if args.file:
+    filename = args.file
+else:
+    filename = input('Enter filename (including \'.csv\'): ')
+
+if args.batch:
+    batch = args.batch
+else:
+    batch = input('Enter batch letter: ')
+
+
 f3 = csv.writer(open('subjectsToUpload'+'_Batch'+batch+'_'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'w'))
 f3.writerow(['oldKey']+['oldSubject']+['newKey']+['newSubject'])
 
@@ -10,10 +27,8 @@ f4 = csv.writer(open('subjectsToSplitAndUpload'+'_Batch'+batch+'_'+datetime.now(
 f4.writerow(['oldKey']+['oldSubject']+['newKey']+['newSubject'])
 
 
-subjectFile = 'subjects'+'_Batch'+batch+'.csv'
-
-with open(subjectFile) as itemMetadataFile3:
-    itemMetadata = csv.DictReader(itemMetadataFile3)
+with open(filename) as itemMetadataFile:
+    itemMetadata = csv.DictReader(itemMetadataFile)
     for row in itemMetadata:
         oldKey = row['oldKey']
         oldSubject = row['oldSubject']
