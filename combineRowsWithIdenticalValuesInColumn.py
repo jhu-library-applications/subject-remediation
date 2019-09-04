@@ -33,22 +33,22 @@ print(my_encoding)
 df = pd.read_csv(filename, encoding=my_encoding)
 
 print(df.head())
-#combine identicial subject strings in different rows into one row; in that row create column with list of URI associated with that string
+# combine identicial subject strings in different rows into one row; in that row create column with list of URI associated with that string
 pivoted = pd.pivot_table(df, index=['dc.subject'], values='uri', aggfunc=lambda x: ','.join(str(v) for v in x))
 print(pivoted.sort_values(ascending=True, by='dc.subject').head())
 
 df = pd.DataFrame(pivoted)
 df = df.reset_index()
 
-df['newValue'] = df['dc.subject'] #duplicate column dc.subject
-df['category'] = '' #add blank column called Category
+df['newValue'] = df['dc.subject']  # duplicate column dc.subject
+df['category'] = ''  # add blank column called Category
 
 print(df.head())
 
 
 df.to_csv('newData.csv')
 
-#do basic remediation on newValue column -get rid of extra spaces, all quotes, and capitalize first letter in string
+# do basic remediation on newValue column -get rid of extra spaces, all quotes, and capitalize first letter in string
 f = csv.writer(open('00_deDuplicatedSubjects'+batch+'.csv', 'w'))
 f.writerow(['uri']+['dc.subject']+['newValue']+['changed']+['category'])
 
@@ -60,7 +60,7 @@ with open('newData.csv') as itemMetadataFile:
         newValue = row['newValue']
         category = row['category']
         changed = ''
-        match = re.search(r'^[a-z]', newValue) #finds strings with slashes, probably MESH headings
+        match = re.search(r'^[a-z]', newValue)  # finds strings with slashes, probably MESH headings
         if newValue.find("/") != -1:
             category = 'MESH'
             f.writerow([uri]+[subject]+[newValue]+[changed]+[category])
@@ -71,21 +71,21 @@ with open('newData.csv') as itemMetadataFile:
                 pass
             try:
                 if newValue.find("  ") != -1:
-                    newValue = newValue.replace("  ", " ") #removes extra blanks
+                    newValue = newValue.replace("  ", " ")  # removes extra blanks
                     print(newValue)
                     changed = 'yes'
             except:
                 pass
             try:
                 if newValue.find('\"') != -1:
-                    newValue = newValue.replace('\"', '') #delete quote marks
+                    newValue = newValue.replace('\"', '')  # delete quote marks
                     print(newValue)
                     changed = 'yes'
             except:
                 pass
             try:
                 if match:
-                    newValue = newValue[:1].upper() + newValue[1:] #capitalize first letter in first word
+                    newValue = newValue[:1].upper() + newValue[1:]  # capitalize first letter in first word
                     print(newValue)
                     changed = 'yes'
             except:

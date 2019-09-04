@@ -1,14 +1,7 @@
-import json
-from pprint import pprint
-from operator import itemgetter
 import requests
 import csv
-import time
 from datetime import datetime
 import re
-from itertools import chain
-import codecs
-import unicodedata
 import argparse
 
 
@@ -35,7 +28,7 @@ else:
 
 # some config
 api_base_url = "http://fast.oclc.org/searchfast/fastsuggest"
-#For constructing links to FAST.
+# For constructing links to FAST.
 fast_uri_base = "http://id.worldcat.org/fast/{0}"
 
 
@@ -54,8 +47,8 @@ with open(filename) as itemMetadataFile:
         old_subject = row['dc.subject']
         search_subject = row['cleanedSubject']
         print(search_subject)
-        names =[]
-        search_query = search_subject.replace("--", " ") #improve quality of searching API by deleting dashes & () from search query
+        names = []
+        search_query = search_subject.replace("--", " ")  # improve quality of searching API by deleting dashes & () from search query
         search_query = search_query.replace("(", " ")
         search_query = search_query.replace(")", " ")
         url = api_base_url + '?&query=' + search_query
@@ -66,7 +59,7 @@ with open(filename) as itemMetadataFile:
                 if item == 'response':
                     response = data.get(item)
 
-                    if response.get('numFound') == 0: #if no results found from FAST search, divide up subjects and put into new csv
+                    if response.get('numFound') == 0:  # if no results found from FAST search, divide up subjects and put into new csv
                         if divide == 'yes':
                             print('No matches found')
                             subject_search_list = []
@@ -80,7 +73,7 @@ with open(filename) as itemMetadataFile:
                                 subject = subject.replace(".", "")
                                 subject = subject.strip()
                                 divided_subjects.append(subject)
-                            if len(divided_subjects) >= 2 :
+                            if len(divided_subjects) >= 2:
                                 for subject in divided_subjects:
                                     subject_search_list.append(subject)
                                 if len(divided_subjects) >= 3:
@@ -96,11 +89,11 @@ with open(filename) as itemMetadataFile:
                                         divided_subjects_e = ' '.join(divided_subjects[2:])
                                         subject_search_list.append(divided_subjects_e)
                             f2.writerow([uri]+[old_subject]+[search_subject]+[subject_search_list])
-                            #print('added to second spreadsheet')
+                            # print('added to second spreadsheet')
                             break
                         else:
                             f.writerow([uri]+[old_subject]+[search_subject]+[names])
-                            #print('added to first spreadsheet')
+                            # print('added to first spreadsheet')
                     else:
                         for metadata in response:
                             if metadata == 'docs':
@@ -115,8 +108,8 @@ with open(filename) as itemMetadataFile:
                                     else:
                                         pass
                         f.writerow([uri]+[old_subject]+[search_subject]+[names])
-                        #print('added to first spreadsheet')
+                        # print('added to first spreadsheet')
         except:
             print('exception')
             f.writerow([uri]+[old_subject]+[search_subject]+[names])
-            #print('added to first spreadsheet')
+            # print('added to first spreadsheet')

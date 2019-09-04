@@ -69,24 +69,24 @@ with open(filename) as itemMetadataFile:
 with open(filename2) as itemMetadataFile2:
     itemMetadata = csv.DictReader(itemMetadataFile2)
     for row in itemMetadata:
-            oldKey = 'dc.subject'
-            oldSubject = row['dc.subject']
-            cleanedSubject = row['cleanedSubject']
-            results = row['results'].strip()
-            selection = row['selection'].strip()
-            newKey = ''
-            newSubject = ''
-            if selection == 'x':
-                newKey = 'dc.subject.fast'
-                newSubject = results
-                f.writerow([oldKey]+[oldSubject]+[newKey]+[newSubject])
-            elif selection == 'none':
-                newKey = 'dc.subject'
-                newSubject = cleanedSubject
-                f.writerow([oldKey]+[oldSubject]+[newKey]+[newSubject])
-            else:
-                print('Error found')
-                error = error + 1
-                f2.writerow([oldSubject]+[cleanedSubject]+[results]+[selection])
+        oldKey = 'dc.subject'
+        oldSubject = row['dc.subject']
+        cleanedSubject = row['cleanedSubject']
+        results = row['results'].strip()
+        selection = row['selection'].strip()
+        newKey = ''
+        newSubject = ''
+        if selection == 'x':
+            newKey = 'dc.subject.fast'
+            newSubject = results
+            f.writerow([oldKey]+[oldSubject]+[newKey]+[newSubject])
+        elif selection == 'none':
+            newKey = 'dc.subject'
+            newSubject = cleanedSubject
+            f.writerow([oldKey]+[oldSubject]+[newKey]+[newSubject])
+        else:
+            print('Error found')
+            error = error + 1
+            f2.writerow([oldSubject]+[cleanedSubject]+[results]+[selection])
 
 print('{} errors found'.format(error))

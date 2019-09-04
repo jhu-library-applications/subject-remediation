@@ -1,11 +1,6 @@
-
-import json
 import requests
 import csv
-import time
 from datetime import datetime
-import codecs
-import unicodedata
 import argparse
 from fuzzywuzzy import fuzz
 
@@ -46,7 +41,7 @@ with open(filename) as itemMetadataFile:
         category = row['category']
         print(search_subject)
         if category == 'MESH':
-            search_query = search_subject.replace("--", " ") #improve quality of searching API by deleting dashes & () from search query
+            search_query = search_subject.replace("--", " ")  # improve quality of searching API by deleting dashes & () from search query
             search_query = search_query.replace("(", " ")
             search_query = search_query.replace(")", " ")
             if '/' in search_subject:
@@ -65,7 +60,7 @@ with open(filename) as itemMetadataFile:
                     if len(search_subjects) == 1:
                         f.writerow([uri]+[old_subject]+[search_subject]+[label])
                     elif len(search_subjects) > 1:
-                        pair_url= 'https://id.nlm.nih.gov/mesh/lookup/pair?label='+search_subjects[1]+'&descriptor=http%3A%2F%2Fid.nlm.nih.gov%2Fmesh%2F'+resource+'&match=contains&limit=10'
+                        pair_url = 'https://id.nlm.nih.gov/mesh/lookup/pair?label='+search_subjects[1]+'&descriptor=http%3A%2F%2Fid.nlm.nih.gov%2Fmesh%2F'+resource+'&match=contains&limit=10'
                         data = requests.get(pair_url).json()
                         for item in data:
                             full_label = item.get('label')

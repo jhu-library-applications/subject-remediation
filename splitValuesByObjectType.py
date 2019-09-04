@@ -35,7 +35,7 @@ with open(filename) as itemMetadataFile:
         newKey = row['newKey']
         newSubject = row['newSubject']
         try:
-            newSubject= ast.literal_eval(newSubject)
+            newSubject = ast.literal_eval(newSubject)
             if isinstance(newSubject, list):
                 print(len(newSubject))
                 if len(newSubject) == 1:

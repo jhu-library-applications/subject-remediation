@@ -1,19 +1,9 @@
-import json
-from pprint import pprint
-from operator import itemgetter
 import requests
 import csv
-import time
 from datetime import datetime
 from fuzzywuzzy import fuzz
-import re
-from itertools import chain
-import codecs
-import unicodedata
 import argparse
 import ast
-
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--file', help='enter filename with csv. optional - if not provided, the script will ask for input')
@@ -32,7 +22,7 @@ else:
 
 # some config
 api_base_url = "http://fast.oclc.org/searchfast/fastsuggest"
-#For constructing links to FAST.
+# For constructing links to FAST.
 fast_uri_base = "http://id.worldcat.org/fast/{0}"
 
 
