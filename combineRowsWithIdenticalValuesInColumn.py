@@ -50,7 +50,7 @@ df.to_csv('newData.csv')
 
 # do basic remediation on newValue column -get rid of extra spaces, all quotes, and capitalize first letter in string
 f = csv.writer(open('00_deDuplicatedSubjects'+batch+'.csv', 'w'))
-f.writerow(['uri']+['dc.subject']+['newValue']+['changed']+['category'])
+f.writerow(['uri']+['dc.subject']+['newValue']+['category'])
 
 with open('newData.csv') as itemMetadataFile:
     itemMetadata = csv.DictReader(itemMetadataFile)
@@ -59,35 +59,27 @@ with open('newData.csv') as itemMetadataFile:
         subject = row['dc.subject']
         newValue = row['newValue']
         category = row['category']
-        changed = ''
-        match = re.search(r'^[a-z]', newValue)  # finds strings with slashes, probably MESH headings
-        if newValue.find("/") != -1:
-            category = 'MESH'
-            f.writerow([uri]+[subject]+[newValue]+[changed]+[category])
-        else:
-            try:
-                newValue = newValue.strip()
-            except:
-                pass
-            try:
-                if newValue.find("  ") != -1:
-                    newValue = newValue.replace("  ", " ")  # removes extra blanks
-                    print(newValue)
-                    changed = 'yes'
-            except:
-                pass
-            try:
-                if newValue.find('\"') != -1:
-                    newValue = newValue.replace('\"', '')  # delete quote marks
-                    print(newValue)
-                    changed = 'yes'
-            except:
-                pass
-            try:
-                if match:
-                    newValue = newValue[:1].upper() + newValue[1:]  # capitalize first letter in first word
-                    print(newValue)
-                    changed = 'yes'
-            except:
-                pass
-            f.writerow([uri]+[subject]+[newValue]+[changed]+[category])
+        match = re.search(r'^[a-z]', newValue)
+        try:
+            newValue = newValue.strip()
+        except:
+            pass
+        try:
+            if newValue.find("  ") != -1:
+                newValue = newValue.replace("  ", " ")  # removes extra blanks
+                print(newValue)
+        except:
+            pass
+        try:
+            if newValue.find('\"') != -1:
+                newValue = newValue.replace('\"', '')  # delete quote marks
+                print(newValue)
+        except:
+            pass
+        try:
+            if match:
+                newValue = newValue[:1].upper() + newValue[1:]  # capitalize first letter in first word
+                print(newValue)
+        except:
+            pass
+        f.writerow([uri]+[subject]+[newValue]+[category])
