@@ -4,6 +4,7 @@ from datetime import datetime
 import re
 import argparse
 from fuzzywuzzy import fuzz
+import pandas as pd
 
 
 parser = argparse.ArgumentParser()
@@ -33,11 +34,15 @@ mesh_url = 'https://id.nlm.nih.gov/mesh/lookup/descriptor?label='
 # For constructing links to FAST.
 fast_uri_base = "http://id.worldcat.org/fast/{0}"
 
+f1name = 'subjectMatchesToReview_Batch'+batch+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv'
+f2name = 'potentialLCSHToConvert_Batch'+batch+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv'
 
-f = csv.writer(open('subjectMatchesToReview_Batch'+batch+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'w'))
-f.writerow(['uri']+['dc.subject']+['cleanedSubject']+['results'])
-f2 = csv.writer(open('potentialLCSHToConvert_Batch'+batch+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'w'))
-f2.writerow(['uri']+['dc.subject']+['cleanedSubject']+['searchList'])
+f = open(f1name, 'w')
+writer1 = csv.writer(f)
+writer1.writerow(['uri']+['dc.subject']+['cleanedSubject']+['type']+['results'])
+f2 = open(f2name, 'w')
+writer2 = csv.writer(f2)
+writer2.writerow(['uri']+['dc.subject']+['cleanedSubject']+['searchList'])
 
 
 def fastResults_function(uri, old_subject, response, search_subject):
@@ -48,55 +53,57 @@ def fastResults_function(uri, old_subject, response, search_subject):
             for info in keyInfo:
                 auth_name = info.get('auth')
                 ratio = fuzz.token_sort_ratio(auth_name, search_subject)
-                print(ratio)
                 if auth_name == search_subject or ratio == 100:
-                    auth_names.append(auth_name)
+                    writer1.writerow([uri]+[old_subject]+[search_subject]+['fast_exact']+[auth_name])
+                    global fast_found
+                    fast_found = 'yes'
                     break
                 elif ratio >= 90:
-                    auth_names.append(auth_name)
+                    if auth_name not in auth_names:
+                        auth_names.append(auth_name)
                 else:
                     pass
             if len(auth_names) > 0:
-                f.writerow([uri]+[old_subject]+[search_subject]+['fast']+[auth_names])
+                writer1.writerow([uri]+[old_subject]+[search_subject]+['fast']+[auth_names])
+            elif fast_found == 'yes':
+                pass
             else:
-                global fast_found
                 fast_found = 'no'
 
 
 def fastNoResults_function(uri, old_subject, search_subject, divide, search_subjects):
     if divide == 'yes':
-        print('No matches found')
         subject_search_list = []
+        divided_subjects = []
         if search_subject.find("--") != -1:
             raw_divided_subjects = search_subject.split("--")
         else:
             raw_divided_subjects = re.findall('([A-Z][^A-Z]*)', search_subject)
-        divided_subjects = []
         for subject in raw_divided_subjects:
-            subject = subject.replace("--", "")
-            subject = subject.replace(".", "")
-            subject = subject.strip()
+            subject = subject.replace("--", "").replace(".", "").strip()
             divided_subjects.append(subject)
         if len(divided_subjects) >= 2:
             for subject in divided_subjects:
                 subject_search_list.append(subject)
-            if len(divided_subjects) >= 3:
-                divided_subjects_a = ' '.join(divided_subjects[:2])
-                subject_search_list.append(divided_subjects_a)
-                divided_subjects_b = ' '.join(divided_subjects[1:])
-                subject_search_list.append(divided_subjects_b)
-                if len(divided_subjects) >= 4:
-                    divided_subjects_c = ' '.join(divided_subjects[0:3])
-                    subject_search_list.append(divided_subjects_c)
-                    divided_subjects_d = ' '.join(divided_subjects[1:3])
-                    subject_search_list.append(divided_subjects_d)
-                    divided_subjects_e = ' '.join(divided_subjects[2:])
-                    subject_search_list.append(divided_subjects_e)
-            f2.writerow([uri]+[old_subject]+[search_subject]+[subject_search_list])
+                if len(divided_subjects) >= 3:
+                    divided_subjects_a = ' '.join(divided_subjects[:2])
+                    subject_search_list.append(divided_subjects_a)
+                    divided_subjects_b = ' '.join(divided_subjects[1:])
+                    subject_search_list.append(divided_subjects_b)
+                    if len(divided_subjects) >= 4:
+                        divided_subjects_c = ' '.join(divided_subjects[0:3])
+                        subject_search_list.append(divided_subjects_c)
+                        divided_subjects_d = ' '.join(divided_subjects[1:3])
+                        subject_search_list.append(divided_subjects_d)
+                        divided_subjects_e = ' '.join(divided_subjects[2:])
+                        subject_search_list.append(divided_subjects_e)
+        print(subject_search_list)
+        if len(subject_search_list) > 1:
+            writer2.writerow([uri]+[old_subject]+[search_subject]+[subject_search_list])
         else:
-            f.writerow([uri]+[old_subject]+[search_subject]+['not found'])
+            writer1.writerow([uri]+[old_subject]+[search_subject]+['not found'])
     else:
-        f.writerow([uri]+[old_subject]+[search_subject]+['not found'])
+        writer1.writerow([uri]+[old_subject]+[search_subject]+['not found'])
 
 
 def mesh_function(uri, old_subject, search_subject, meshsearch_url, search_subjects):
@@ -127,7 +134,7 @@ def mesh_function(uri, old_subject, search_subject, meshsearch_url, search_subje
             pass
     print(label_list)
     if len(label_list) > 0:
-        f.writerow([uri]+[old_subject]+[search_subject]+['mesh']+[label_list])
+        writer1.writerow([uri]+[old_subject]+[search_subject]+['mesh_exact']+[label_list])
     else:
         global mesh_found
         mesh_found = 'no'
@@ -140,12 +147,10 @@ with open(filename) as itemMetadataFile:
         fast_found = ''
         mesh_found = ''
         row_count = row_count + 1
-        print(row_count)
         uri = row['uri']
         old_subject = row['dc.subject']
         search_subject = row['cleanedSubject']
         print(search_subject)
-        names = []
         search_query = search_subject.replace("--", " ")  # improve quality of searching API by deleting dashes & () from search query
         search_query = search_query.replace("(", " ")
         search_query = search_query.replace(")", " ")
@@ -163,11 +168,28 @@ with open(filename) as itemMetadataFile:
                     response = data.get(item)
                     if response.get('numFound') > 0:
                         fastResults_function(uri, old_subject, response, search_subject)
-                    elif response.get('numFound') == 0 or fast_found == 'no':
+                        if fast_found == 'no':
+                            mesh_function(uri, old_subject, search_subject, meshsearch_url, search_subjects)
+                            if mesh_found == 'no':
+                                fastNoResults_function(uri, old_subject, search_subject, divide, search_subjects)
+                            else:
+                                pass
+                    elif response.get('numFound') == 0:
                         mesh_function(uri, old_subject, search_subject, meshsearch_url, search_subjects)
                         if mesh_found == 'no':
                             fastNoResults_function(uri, old_subject, search_subject, divide, search_subjects)
                         else:
                             pass
         except:
-            print('boo')
+            writer1.writerow([uri]+[old_subject]+[search_subject]+['not found'])
+
+f.close()
+f2.close()
+
+spreadsheet1 = pd.read_csv(f1name)
+spreadsheet2 = pd.read_csv(f2name)
+print('original rows: '+str(row_count))
+print('first spreadsheet: '+str(len(spreadsheet1)))
+print('second spreadsheet: '+str(len(spreadsheet2)))
+total = len(spreadsheet1)+len(spreadsheet2)
+print('both spreadsheets: '+str(total))
