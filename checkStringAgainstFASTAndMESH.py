@@ -8,9 +8,9 @@ import pandas as pd
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-f', '--file', help='enter filename with csv. optional - if not provided, the script will ask for input')
-parser.add_argument('-b', '--batch', help='Batch letter to name outputs. optional - if not provided, the script will ask for input')
-parser.add_argument('-d', '--divide', help='Do you want to divide non-matches? optional - if not provided, the script will ask for input')
+parser.add_argument('-f', '--file', help='Enter filename with csv.')
+parser.add_argument('-b', '--batch', help='Enter batch letter to name outputs')
+parser.add_argument('-d', '--divide', help='Divide non-matches? Enter yes/no')
 args = parser.parse_args()
 
 if args.file:
@@ -38,11 +38,11 @@ f1name = 'subjectMatchesToReview_Batch'+batch+datetime.now().strftime('%Y-%m-%d 
 f2name = 'potentialLCSHToConvert_Batch'+batch+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv'
 
 f = open(f1name, 'w')
-writer1 = csv.writer(f)
-writer1.writerow(['uri']+['dc.subject']+['cleanedSubject']+['type']+['results'])
+w1 = csv.writer(f)
+w1.writerow(['uri']+['dc.subject']+['cleanedSubject']+['type']+['results'])
 f2 = open(f2name, 'w')
-writer2 = csv.writer(f2)
-writer2.writerow(['uri']+['dc.subject']+['cleanedSubject']+['searchList'])
+w2 = csv.writer(f2)
+w2.writerow(['uri']+['dc.subject']+['cleanedSubject']+['searchList'])
 
 
 def fastResults_function(uri, old_subject, response, search_subject):
@@ -54,17 +54,17 @@ def fastResults_function(uri, old_subject, response, search_subject):
                 auth_name = info.get('auth')
                 ratio = fuzz.token_sort_ratio(auth_name, search_subject)
                 if auth_name == search_subject or ratio == 100:
-                    writer1.writerow([uri]+[old_subject]+[search_subject]+['fast_exact']+[auth_name])
+                    w1.writerow([uri]+[old_subject]+[search_subject]+['fast_exact']+[auth_name])
                     global fast_found
                     fast_found = 'yes'
                     break
-                elif ratio >= 90:
+                elif ratio >= 80:
                     if auth_name not in auth_names:
                         auth_names.append(auth_name)
                 else:
                     pass
             if len(auth_names) > 0:
-                writer1.writerow([uri]+[old_subject]+[search_subject]+['fast']+[auth_names])
+                w1.writerow([uri]+[old_subject]+[search_subject]+['fast']+[auth_names])
             elif fast_found == 'yes':
                 pass
             else:
@@ -97,13 +97,12 @@ def fastNoResults_function(uri, old_subject, search_subject, divide, search_subj
                         subject_search_list.append(divided_subjects_d)
                         divided_subjects_e = ' '.join(divided_subjects[2:])
                         subject_search_list.append(divided_subjects_e)
-        print(subject_search_list)
         if len(subject_search_list) > 1:
-            writer2.writerow([uri]+[old_subject]+[search_subject]+[subject_search_list])
+            w2.writerow([uri]+[old_subject]+[search_subject]+[subject_search_list])
         else:
-            writer1.writerow([uri]+[old_subject]+[search_subject]+['not found'])
+            w1.writerow([uri]+[old_subject]+[search_subject]+['not found'])
     else:
-        writer1.writerow([uri]+[old_subject]+[search_subject]+['not found'])
+        w1.writerow([uri]+[old_subject]+[search_subject]+['not found'])
 
 
 def mesh_function(uri, old_subject, search_subject, meshsearch_url, search_subjects):
@@ -132,9 +131,8 @@ def mesh_function(uri, old_subject, search_subject, meshsearch_url, search_subje
                         pass
         else:
             pass
-    print(label_list)
     if len(label_list) > 0:
-        writer1.writerow([uri]+[old_subject]+[search_subject]+['mesh_exact']+[label_list])
+        w1.writerow([uri]+[old_subject]+[search_subject]+['mesh_exact']+[label_list])
     else:
         global mesh_found
         mesh_found = 'no'
@@ -151,7 +149,8 @@ with open(filename) as itemMetadataFile:
         old_subject = row['dc.subject']
         search_subject = row['cleanedSubject']
         print(search_subject)
-        search_query = search_subject.replace("--", " ")  # improve quality of searching API by deleting dashes & () from search query
+        # improve quality of API search by deleting --, &, () from search query
+        search_query = search_subject.replace("--", " ")
         search_query = search_query.replace("(", " ")
         search_query = search_query.replace(")", " ")
         if '/' in search_subject:
@@ -159,7 +158,7 @@ with open(filename) as itemMetadataFile:
         else:
             search_subjects = [search_subject]
         url = api_base_url + '?&query=' + search_query
-        url += '&queryIndex=suggestall&queryReturn=suggestall,idroot,auth,tag,raw&suggest=autoSubject&rows=3&wt=json'
+        url += '&queryIndex=suggestall&queryReturn=suggestall,idroot,auth,tag,raw&suggest=autoSubject&rows=5&wt=json'
         meshsearch_url = mesh_url+search_subjects[0]+'&match=contains&limit=10'
         try:
             data = requests.get(url).json()
@@ -180,8 +179,8 @@ with open(filename) as itemMetadataFile:
                             fastNoResults_function(uri, old_subject, search_subject, divide, search_subjects)
                         else:
                             pass
-        except:
-            writer1.writerow([uri]+[old_subject]+[search_subject]+['not found'])
+        except ValueError:
+            w1.writerow([uri]+[old_subject]+[search_subject]+['not found'])
 
 f.close()
 f2.close()
