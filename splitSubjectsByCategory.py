@@ -19,12 +19,10 @@ else:
 f = csv.writer(open('subjectsToCheckAgainstFAST_Batch'+batch+'.csv', 'w'))
 f.writerow(['uri']+['dc.subject']+['cleanedSubject'])
 
-f2 = csv.writer(open('manualFixes_Batch'+batch+'.csv', 'w'))
-f2.writerow(['uri']+['dc.subject']+['cleanedSubject'])
 
 row_count = 0
-nonmanual_count = 0
-manual_count = 0
+newrow_count = 0
+
 with open(filename) as itemMetadataFile:
     itemMetadata = csv.DictReader(itemMetadataFile)
     for row in itemMetadata:
@@ -39,21 +37,14 @@ with open(filename) as itemMetadataFile:
             row_count = row_count + newValueCount
             for value in newValueList:
                 f.writerow([uri]+[dc_subject]+[value])
-                nonmanual_count = nonmanual_count + 1
+                newrow_count = newrow_count + 1
         elif category == 'remove':
             newValue = newValue.replace('.', '')
             f.writerow([uri]+[dc_subject]+[newValue])
-            nonmanual_count = nonmanual_count + 1
-        elif category == 'bad':
-            f2.writerow([uri]+[dc_subject]+[newValue])
-            manual_count = manual_count + 1
-        elif category == '?':
-            f2.writerow([uri]+[dc_subject]+[newValue])
-            manual_count = manual_count + 1
+            newrow_count = newrow_count + 1
         else:
             f.writerow([uri]+[dc_subject]+[newValue])
-            nonmanual_count = nonmanual_count + 1
+            newrow_count = newrow_count + 1
 
 print('total_row: '+str(row_count))
-print('nonmanual_count: '+str(nonmanual_count))
-print('manual_count: '+str(manual_count))
+print('newrow_count: '+str(newrow_count))
