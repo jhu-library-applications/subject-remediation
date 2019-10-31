@@ -16,7 +16,7 @@ if args.batch:
 else:
     batch = input('Enter batch letter: ')
 
-f = csv.writer(open('subjectsToCheckAgainstFAST_Batch'+batch+'.csv', 'w'))
+f = csv.writer(open('subjectsToCheckAgainstFASTAndMESH_Batch'+batch+'.csv', 'w'))
 f.writerow(['uri']+['dc.subject']+['cleanedSubject'])
 
 
