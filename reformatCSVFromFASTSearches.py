@@ -39,6 +39,7 @@ with open(filename) as itemMetadataFile:
         oldKey = 'dc.subject'
         oldSubject = row['dc.subject']
         cleanedSubject = row['cleanedSubject']
+        type = row['type']
         results = row['results'].strip()
         selection = row['selection'].strip()
         try:
@@ -47,17 +48,21 @@ with open(filename) as itemMetadataFile:
             selection = selection
         newKey = ''
         newSubject = ''
-        if results == 'FASTmatch':
-            newSubject = cleanedSubject
+        if type == 'fast_exact':
+            newSubject = results
             newKey = 'dc.subject.fast'
             f.writerow([oldKey]+[oldSubject]+[newKey]+[newSubject])
-        elif results != 'FASTmatch' and isinstance(selection, int):
+        elif type == 'mesh_exact':
+            newSubject = results
+            newKey = 'dc.subject.mesh'
+            f.writerow([oldKey]+[oldSubject]+[newKey]+[newSubject])
+        elif type == 'fast' and isinstance(selection, int):
             results = ast.literal_eval(results)
             selection = selection - 1
             newSubject = results[selection]
             newKey = 'dc.subject.fast'
             f.writerow([oldKey]+[oldSubject]+[newKey]+[newSubject])
-        elif results != 'FASTmatch' and selection == 'none':
+        elif type == 'not found' and selection == 'none':
             newSubject = cleanedSubject
             newKey = 'dc.subject'
             f.writerow([oldKey]+[oldSubject]+[newKey]+[newSubject])

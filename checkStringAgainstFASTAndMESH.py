@@ -58,7 +58,7 @@ def fastResults_function(uri, old_subject, response, search_subject):
                     global fast_found
                     fast_found = 'yes'
                     break
-                elif ratio >= 80:
+                elif ratio >= 70:
                     if auth_name not in auth_names:
                         auth_names.append(auth_name)
                 else:
@@ -132,7 +132,7 @@ def mesh_function(uri, old_subject, search_subject, meshsearch_url, search_subje
         else:
             pass
     if len(label_list) > 0:
-        w1.writerow([uri]+[old_subject]+[search_subject]+['mesh_exact']+[label_list])
+        w1.writerow([uri]+[old_subject]+[search_subject]+['mesh_exact']+[label_list[0]])
     else:
         global mesh_found
         mesh_found = 'no'
