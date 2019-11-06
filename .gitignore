@@ -58,6 +58,7 @@ local/*
 *.xlsx
 figuringout.py
 
+!homonyms.csv
 !dataCite_example-complexvalues.xml
 !dataCite_example-datapaper.xml
 !dataCite_example-full.xml
