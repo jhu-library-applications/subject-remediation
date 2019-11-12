@@ -28,10 +28,9 @@ if args.divide:
 else:
     divide = input('Do you want to divide non-matches? Enter yes or no: ')
 
-# some config
+# Some config for FAST and MESH APIs.
 api_base_url = "http://fast.oclc.org/searchfast/fastsuggest"
 mesh_url = 'https://id.nlm.nih.gov/mesh/lookup/descriptor?label='
-# For constructing links to FAST.
 fast_uri_base = "http://id.worldcat.org/fast/{0}"
 
 f1name = 'subjectMatchesToReview_Batch'+batch+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv'
@@ -39,38 +38,74 @@ f2name = 'potentialLCSHToConvert_Batch'+batch+datetime.now().strftime('%Y-%m-%d 
 
 f = open(f1name, 'w')
 w1 = csv.writer(f)
-w1.writerow(['uri']+['dc.subject']+['cleanedSubject']+['type']+['results'])
+w1.writerow(['uri']+['dc.subject']+['cleanedSubject']+['type']+['results']+['homonym'])
 f2 = open(f2name, 'w')
 w2 = csv.writer(f2)
-w2.writerow(['uri']+['dc.subject']+['cleanedSubject']+['searchList'])
+w2.writerow(['uri']+['dc.subject']+['cleanedSubject']+['searchList']+['homonym'])
+
+#  Find exact matches from FAST API.
+def fastExact_function(uri, old_subject, search_query, search_subject):
+    auth_names = []
+    global fastexact_found
+    fast_url = api_base_url + '?&query=' + search_query
+    fast_url += '&queryIndex=suggestall&queryReturn=suggestall,idroot,auth,tag,raw&suggest=autoSubject&rows=5&wt=json'
+    try:
+        data = requests.get(fast_url).json()
+        for item in data:
+            if item == 'response':
+                response = data.get(item)
+                if response.get('numFound') > 0:
+                    for metadata in response:
+                        if metadata == 'docs':
+                            keyInfo = response.get(metadata)
+                            for info in keyInfo:
+                                auth_name = info.get('auth')
+                                ratio = fuzz.token_sort_ratio(auth_name, search_subject)
+                                if auth_name == search_subject or ratio == 100:
+                                    print('auth100:'+auth_name)
+                                    w1.writerow([uri]+[old_subject]+[search_subject]+['fast_exact']+[auth_name]+[homonym])
+                                    fastexact_found = 'yes'
+                                    break
+                                else:
+                                    pass
+    except ValueError:
+        fastexact_found = 'no'
 
 
-def fastResults_function(uri, old_subject, response, search_subject):
-    for metadata in response:
-        if metadata == 'docs':
-            keyInfo = response.get(metadata)
-            auth_names = []
-            for info in keyInfo:
-                auth_name = info.get('auth')
-                ratio = fuzz.token_sort_ratio(auth_name, search_subject)
-                if auth_name == search_subject or ratio == 100:
-                    w1.writerow([uri]+[old_subject]+[search_subject]+['fast_exact']+[auth_name])
-                    global fast_found
-                    fast_found = 'yes'
-                    break
-                elif ratio >= 70:
-                    if auth_name not in auth_names:
-                        auth_names.append(auth_name)
-                else:
-                    pass
-            if len(auth_names) > 0:
-                w1.writerow([uri]+[old_subject]+[search_subject]+['fast']+[auth_names])
-            elif fast_found == 'yes':
-                pass
-            else:
-                fast_found = 'no'
+#  Find close matches from FAST API
+def fastClose_function(uri, old_subject, search_query, search_subject):
+    auth_names = []
+    global fast_found
+    fast_url = api_base_url + '?&query=' + search_query
+    fast_url += '&queryIndex=suggestall&queryReturn=suggestall,idroot,auth,tag,raw&suggest=autoSubject&rows=5&wt=json'
+    try:
+        data = requests.get(fast_url).json()
+        for item in data:
+            if item == 'response':
+                response = data.get(item)
+                if response.get('numFound') > 0:
+                    for metadata in response:
+                        if metadata == 'docs':
+                            keyInfo = response.get(metadata)
+                            for info in keyInfo:
+                                auth_name = info.get('auth')
+                                suggest_all = info.get('suggestall')
+                                ratio = fuzz.token_sort_ratio(auth_name, search_subject)
+                                suggest_ratio_0 = fuzz.token_set_ratio(suggest_all[0], search_subject)
+                                if ratio >= 70 or suggest_ratio_0 >= 80:
+                                    if auth_name not in auth_names:
+                                        auth_names.append(auth_name)
+                                else:
+                                    pass
+    except:
+        fast_found = 'no'
+    if len(auth_names) > 0:
+        print(auth_names)
+        w1.writerow([uri]+[old_subject]+[search_subject]+['fast']+[auth_names]+[homonym])
+    else:
+        fast_found = 'no'
 
-
+#  Split up subject search string into meaningful permutations.
 def fastNoResults_function(uri, old_subject, search_subject, divide, search_subjects):
     if divide == 'yes':
         subject_search_list = []
@@ -78,7 +113,7 @@ def fastNoResults_function(uri, old_subject, search_subject, divide, search_subj
         if search_subject.find("--") != -1:
             raw_divided_subjects = search_subject.split("--")
         else:
-            raw_divided_subjects = re.findall('([A-Z][^A-Z]*)', search_subject)
+            raw_divided_subjects = search_subject.split(r'(\b)')
         for subject in raw_divided_subjects:
             subject = subject.replace("--", "").replace(".", "").strip()
             divided_subjects.append(subject)
@@ -98,13 +133,13 @@ def fastNoResults_function(uri, old_subject, search_subject, divide, search_subj
                         divided_subjects_e = ' '.join(divided_subjects[2:])
                         subject_search_list.append(divided_subjects_e)
         if len(subject_search_list) > 1:
-            w2.writerow([uri]+[old_subject]+[search_subject]+[subject_search_list])
+            w2.writerow([uri]+[old_subject]+[search_subject]+[subject_search_list]+[homonym])
         else:
-            w1.writerow([uri]+[old_subject]+[search_subject]+['not found'])
+            w1.writerow([uri]+[old_subject]+[search_subject]+['not found']+['']+[homonym])
     else:
-        w1.writerow([uri]+[old_subject]+[search_subject]+['not found'])
+        w1.writerow([uri]+[old_subject]+[search_subject]+['not found']+['']+[homonym])
 
-
+#  Find exact matches from MESH API.
 def mesh_function(uri, old_subject, search_subject, meshsearch_url, search_subjects):
     subject_count = len(search_subjects)
     mesh_data = requests.get(meshsearch_url).json()
@@ -132,7 +167,7 @@ def mesh_function(uri, old_subject, search_subject, meshsearch_url, search_subje
         else:
             pass
     if len(label_list) > 0:
-        w1.writerow([uri]+[old_subject]+[search_subject]+['mesh_exact']+[label_list[0]])
+        w1.writerow([uri]+[old_subject]+[search_subject]+['mesh_exact']+[label_list[0]]+[homonym])
     else:
         global mesh_found
         mesh_found = 'no'
@@ -144,12 +179,14 @@ with open(filename) as itemMetadataFile:
     for row in itemMetadata:
         fast_found = ''
         mesh_found = ''
+        fastexact_found = ''
         row_count = row_count + 1
         uri = row['uri']
         old_subject = row['dc.subject']
-        search_subject = row['cleanedSubject']
+        search_subject = row['cleanedSubject'].strip()
+        homonym = row['homonym']
         print(search_subject)
-        # improve quality of API search by deleting --, &, () from search query
+        #  Improve quality of API search.
         search_query = search_subject.replace("--", " ")
         search_query = search_query.replace("(", " ")
         search_query = search_query.replace(")", " ")
@@ -157,30 +194,17 @@ with open(filename) as itemMetadataFile:
             search_subjects = search_subject.split('/')
         else:
             search_subjects = [search_subject]
-        url = api_base_url + '?&query=' + search_query
-        url += '&queryIndex=suggestall&queryReturn=suggestall,idroot,auth,tag,raw&suggest=autoSubject&rows=5&wt=json'
         meshsearch_url = mesh_url+search_subjects[0]+'&match=contains&limit=10'
-        try:
-            data = requests.get(url).json()
-            for item in data:
-                if item == 'response':
-                    response = data.get(item)
-                    if response.get('numFound') > 0:
-                        fastResults_function(uri, old_subject, response, search_subject)
-                        if fast_found == 'no':
-                            mesh_function(uri, old_subject, search_subject, meshsearch_url, search_subjects)
-                            if mesh_found == 'no':
-                                fastNoResults_function(uri, old_subject, search_subject, divide, search_subjects)
-                            else:
-                                pass
-                    elif response.get('numFound') == 0:
-                        mesh_function(uri, old_subject, search_subject, meshsearch_url, search_subjects)
-                        if mesh_found == 'no':
-                            fastNoResults_function(uri, old_subject, search_subject, divide, search_subjects)
-                        else:
-                            pass
-        except ValueError:
-            w1.writerow([uri]+[old_subject]+[search_subject]+['not found'])
+        #  Loop through function to find matches.
+        fastExact_function(uri, old_subject, search_query, search_subject)
+        if fastexact_found != 'yes':
+            mesh_function(uri, old_subject, search_subject, meshsearch_url, search_subjects)
+            if mesh_found == 'no':
+                fastClose_function(uri, old_subject, search_query, search_subject)
+                if fast_found == 'no':
+                    fastNoResults_function(uri, old_subject, search_subject, divide, search_subjects)
+                else:
+                    pass
 
 f.close()
 f2.close()

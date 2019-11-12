@@ -21,7 +21,7 @@ f = csv.writer(open('subjectsToCheckAgainstFASTAndMESH_Batch'+batch+'.csv', 'w')
 f.writerow(['uri']+['dc.subject']+['cleanedSubject'])
 
 f2 = csv.writer(open('listSubjectsToCheckAgainstFASTAndMESH_Batch'+batch+'.csv', 'w'))
-f.writerow(['uri']+['dc.subject']+['cleanedSubject'])
+f2.writerow(['uri']+['dc.subject']+['cleanedSubject'])
 
 
 row_count = 0

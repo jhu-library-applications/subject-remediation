@@ -1,8 +1,28 @@
 # subject-remediation
 
-## checkStringAgainstFAST.py
+## checkStringAgainstFASTAndMESH.py
 
-A python script runs subject strings from a CSV against OCLC's FAST API to find possible matches. The results of this search are put into a new CSV with a column named "results". If an exact match to the subject string is found, "FASTmatch" is added to the "results" column. If no exact match is found, the 3 top results from the API are put into the "results" column as a list.
+This script runs subject strings from a CSV against [OCLC's FAST API](https://platform.worldcat.org/api-explorer/apis/fastapi) and [NIH's MESH API](https://hhs.github.io/meshrdf/sparql-and-uri-requests) to find possible matches.
+
+This is done by looping through the following functions, and trying to find a match. If a match is found, the loop stops and the results are recorded in a CSV.
+
+1) **fastExact_function**: Searches FAST API for an exact match. If it finds an authorized heading that exactly matches the cleanedSubject or has a fuzzywuzzy token_sort_ratio of 100, it records the match and the type in the csv 'subjectMatchesToReview_BatchA.csv'. The variable fastexact_found is set to 'yes.'
+
+2) **mesh_function**: Searches MESH API for an exact match. If it finds an authorized heading that exactly matches the cleanedSubject or has a fuzzywuzzy token_sort_ratio of more than 95, it records the match and the type in the csv 'subjectMatchesToReview_BatchA.csv'. The variable mesh_found is set to 'yes'
+
+3) **fastClose_function**: Searches the FAST API for a close match. If it finds any authorized headings with a fuzzywuzzy token_sort_ratio of over 70 or a token_set_ratio of 80
+
+3) **fastNoResults_function**: Splits up subject heading into different string combos and adds to csv 'potentialLCSHToConvert_BatchA.csv'
+
+The csv 'subjectMatchesToReview_BatchA.csv' has the following columns: uri, dc.subject, cleanedSubject, type, results, and homonym.
+
+URI contains the item(s) uri(s)
+dc.subject contains the original subject string from the item(s)
+cleanedSubject is the cleaned subject (removed puncuation and editing from previous scripts)
+Type is either 'fast_exact', 'mesh_exact', 'fast', or 'not found'.
+Results contain the authorized heading from the API search
+Homonym contains 'yes' if the subject is homonym. This was generated from [homonymCheck.py]()
+
 
 If the FAST API does not find any possible matches for a subject string, there is option for the script to split the subject string by "--" or by capitalization pattern to create meaningful permutations of the string. For instance, the string "Agricultural resources--Maryland--Carroll County--Maps" will be split into 4 different strings, which has 9 different permutations (see below) that might be meaningful to the FAST API. These different meaningful permutations are combined into a list and added in a column "subject_search_list" in new CSV called "potentialLCSHToConvert_Batch.csv". In convertLCSHToFAST.py. these permutations are searched again against the FAST API for possible matches.
 
@@ -19,9 +39,6 @@ If the FAST API does not find any possible matches for a subject string, there i
 |Agricultural resources--Maryland--Carroll County--Maps | Maryland--Carroll County                         |
 |Agricultural resources--Maryland--Carroll County--Maps | Carroll County--Maps                             |
 
-## checkStringAgainstMESH.py
-
-A python script runs subject strings from a CSV against the MESH API to find valid matches.
 
 ## combineRowsWithIdenticalValuesInColumn.py
 

@@ -22,16 +22,22 @@ with open('homonyms.csv') as file:
     for row in csv.reader(file, delimiter = ','):
         for item in row:
             homonymsList.append(item)
+
+f = csv.writer(open('listSubjectsToCheckAgainstFASTAndMESH_Batch'+batch+'2.csv', 'w'))
+f.writerow(['uri']+['dc.subject']+['cleanedSubject']+['homonym'])
+
 total = 0
-print(homonymsList)
 with open(filename) as itemMetadataFile:
         itemMetadata = csv.DictReader(itemMetadataFile)
         for row in itemMetadata:
-            newValue = row['newValue'].lower()
-            newValueList = newValue.split(" ")
+            uri = row['uri']
+            dc_subject = row['dc.subject']
+            cleanedSubject = row['cleanedSubject']
+            newValue = cleanedSubject.lower()
             if newValue in homonymsList:
-                print(newValue)
+                f.writerow([uri]+[dc_subject]+[cleanedSubject]+['yes'])
+                print(cleanedSubject)
                 total = total + 1
             else:
-                pass
+                f.writerow([uri]+[dc_subject]+[cleanedSubject])
 print(total)
