@@ -43,9 +43,9 @@ f2 = open(f2name, 'w')
 w2 = csv.writer(f2)
 w2.writerow(['uri']+['dc.subject']+['cleanedSubject']+['searchList']+['homonym'])
 
+
 #  Find exact matches from FAST API.
 def fastExact_function(uri, old_subject, search_query, search_subject):
-    auth_names = []
     global fastexact_found
     fast_url = api_base_url + '?&query=' + search_query
     fast_url += '&queryIndex=suggestall&queryReturn=suggestall,idroot,auth,tag,raw&suggest=autoSubject&rows=5&wt=json'
@@ -97,13 +97,14 @@ def fastClose_function(uri, old_subject, search_query, search_subject):
                                         auth_names.append(auth_name)
                                 else:
                                     pass
-    except:
+    except ValueError:
         fast_found = 'no'
     if len(auth_names) > 0:
         print(auth_names)
         w1.writerow([uri]+[old_subject]+[search_subject]+['fast']+[auth_names]+[homonym])
     else:
         fast_found = 'no'
+
 
 #  Split up subject search string into meaningful permutations.
 def fastNoResults_function(uri, old_subject, search_subject, divide, search_subjects):
@@ -113,31 +114,35 @@ def fastNoResults_function(uri, old_subject, search_subject, divide, search_subj
         if search_subject.find("--") != -1:
             raw_divided_subjects = search_subject.split("--")
         else:
-            raw_divided_subjects = search_subject.split(r'(\b)')
+            raw_divided_subjects = re.split(r'\s+', search_subject)
         for subject in raw_divided_subjects:
             subject = subject.replace("--", "").replace(".", "").strip()
             divided_subjects.append(subject)
-        if len(divided_subjects) >= 2:
-            for subject in divided_subjects:
-                subject_search_list.append(subject)
-                if len(divided_subjects) >= 3:
-                    divided_subjects_a = ' '.join(divided_subjects[:2])
-                    subject_search_list.append(divided_subjects_a)
-                    divided_subjects_b = ' '.join(divided_subjects[1:])
-                    subject_search_list.append(divided_subjects_b)
-                    if len(divided_subjects) >= 4:
-                        divided_subjects_c = ' '.join(divided_subjects[0:3])
-                        subject_search_list.append(divided_subjects_c)
-                        divided_subjects_d = ' '.join(divided_subjects[1:3])
-                        subject_search_list.append(divided_subjects_d)
-                        divided_subjects_e = ' '.join(divided_subjects[2:])
-                        subject_search_list.append(divided_subjects_e)
-        if len(subject_search_list) > 1:
+        print(divided_subjects)
+        if len(divided_subjects) >= 3:
+            for term in divided_subjects:
+                subject_search_list.append(term)
+                print(term)
+            print(subject_search_list)
+            divided_subjects_a = ' '.join(divided_subjects[:2])
+            subject_search_list.append(divided_subjects_a)
+            print(subject_search_list)
+            divided_subjects_b = ' '.join(divided_subjects[1:])
+            subject_search_list.append(divided_subjects_b)
+            print(subject_search_list)
+            if len(divided_subjects) >= 4:
+                divided_subjects_c = ' '.join(divided_subjects[0:3])
+                subject_search_list.append(divided_subjects_c)
+                divided_subjects_d = ' '.join(divided_subjects[1:3])
+                subject_search_list.append(divided_subjects_d)
+                divided_subjects_e = ' '.join(divided_subjects[2:])
+                subject_search_list.append(divided_subjects_e)
             w2.writerow([uri]+[old_subject]+[search_subject]+[subject_search_list]+[homonym])
         else:
             w1.writerow([uri]+[old_subject]+[search_subject]+['not found']+['']+[homonym])
     else:
         w1.writerow([uri]+[old_subject]+[search_subject]+['not found']+['']+[homonym])
+
 
 #  Find exact matches from MESH API.
 def mesh_function(uri, old_subject, search_subject, meshsearch_url, search_subjects):

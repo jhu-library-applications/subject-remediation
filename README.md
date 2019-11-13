@@ -1,5 +1,9 @@
 # subject-remediation
 
+## checkPuncuationOfStrings.py
+
+This script finds subjects with commas, periods, colons, or that are formatted as a list.
+
 ## checkStringAgainstFASTAndMESH.py
 
 This script runs subject strings from a CSV against [OCLC's FAST API](https://platform.worldcat.org/api-explorer/apis/fastapi) and [NIH's MESH API](https://hhs.github.io/meshrdf/sparql-and-uri-requests) to find possible matches.
@@ -66,6 +70,10 @@ This row takes a CSV with subjects listed by item URI and creates a new CSV orga
 
 Queries OCLC’s FAST API against split subject string permutations. Each subject string permutations calls up three FAST results from the API. If the FAST result has a fuzzy matching token_sort_ratio of more than 30, the result is added to a list called results_list in a new CSV.
 
+## homonymCheck.py
+
+This script checks subjects against a CSV with English language homonyms and marks them if they are a homonym. 
+
 ## reformatCSVFromFASTSearches.py
 
 Using the reformatCSVFromFASTSearches.py script, reformat the following CSVs into four columns in a new spreadsheet called subjectsCombined_BatchA.csv:
@@ -78,9 +86,12 @@ Using the reformatCSVFromFASTSearches.py script, reformat the following CSVs int
 
 The columns are the oldKey, newKey, oldValue, and newValue. Some subjects will have a newKey of dc.subject.fast This script will also produce a spreadsheet called errors_BatchA.csv; it contains subjects that did not meet the criteria for entry into subjectsCombined_BatchA.csv. Review this spreadsheet and fix errors in the original inputs until you can run the reformatCSVFromFASTSearches.py and have no entries in errors_BatchA.csv
 
+## splitSubjectsByCategory.py
+
+This script splits up subjects categorized as a list of subjects. It splits up by commas or by newline/tab. For each individual subject from a list of subjects, it creates a row in a new CSV called 'listSubjectsToCheckAgainstFASTAndMESH_BatchA.csv'. For uncategorized subjects or subjects with periods, it adds them to a new CSV called 'subjectsToCheckAgainstFASTAndMESH_BatchA.csv.' Periods are removed before being added to the CSV if they were categorized as 'remove.'
 
 ## splitValuesByObjectType.py
 
 SplitValuesByObjectType.py on subjectsCombined_BatchA.csv to split the subjects into two categories/spreadsheets:
   * replacing a subject with a single subject (subjectsToUpload_BatchA.csv)
-  * replacing a subject with multiple subjects (subjectsToSplitAndUpload_BatchA.csv
+  * replacing a subject with multiple subjects (subjectsToSplitAndUpload_BatchA.csv)
