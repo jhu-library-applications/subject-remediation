@@ -8,6 +8,7 @@ pd.__version__
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--file')
 parser.add_argument('-b', '--batch', help='Batch letter to name outputs. optional - if not provided, the script will ask for input')
+parser.add_argument('-k', '--key')
 args = parser.parse_args()
 
 if args.file:
@@ -18,6 +19,10 @@ if args.batch:
     batch = args.batch
 else:
     batch = input('Enter batch letter:')
+if args.key:
+    key = args.key
+else:
+    key = input('Enter key: ')
 
 
 def find_encoding(fname):
@@ -33,14 +38,15 @@ print(my_encoding)
 df = pd.read_csv(filename, encoding=my_encoding)
 
 print(df.head())
-# combine identicial subject strings in different rows into one row; in that row create column with list of URI associated with that string
-pivoted = pd.pivot_table(df, index=['dc.subject'], values='uri', aggfunc=lambda x: ','.join(str(v) for v in x))
-print(pivoted.sort_values(ascending=True, by='dc.subject').head())
+# combine identicial key strings in different rows into one row; in that row create column with list of URI associated with that string
+pivoted = pd.pivot_table(df, index=[key], values='uri', aggfunc=lambda x: ','.join(str(v) for v in x))
+print(pivoted.sort_values(ascending=True, by=key).head())
 
 df = pd.DataFrame(pivoted)
 df = df.reset_index()
 
-df['newValue'] = df['dc.subject']  # duplicate column dc.subject
+df = df.drop(columns='uri')
+df['newValue'] = df[key]  # duplicate column with key
 df['category'] = ''  # add blank column called Category
 
 print(df.head())
@@ -50,13 +56,13 @@ df.to_csv('newData.csv')
 
 # do basic remediation on newValue column -get rid of extra spaces, all quotes, and capitalize first letter in string
 f = csv.writer(open('00_deDuplicatedSubjects'+batch+'.csv', 'w'))
-f.writerow(['uri']+['dc.subject']+['newValue']+['category'])
+f.writerow(['uri']+[key]+['newValue']+['category'])
 
 with open('newData.csv') as itemMetadataFile:
     itemMetadata = csv.DictReader(itemMetadataFile)
     for row in itemMetadata:
         uri = row['uri']
-        subject = row['dc.subject']
+        key = row['dc.type']
         newValue = row['newValue']
         category = row['category']
         match = re.search(r'^[a-z]', newValue)
@@ -82,4 +88,4 @@ with open('newData.csv') as itemMetadataFile:
                 print(newValue)
         except:
             pass
-        f.writerow([uri]+[subject]+[newValue]+[category])
+        f.writerow([uri]+[key]+[newValue]+[category])
