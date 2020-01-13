@@ -18,7 +18,7 @@ else:
     batch = input('Enter batch letter: ')
 
 homonymsList = []
-with open('homonyms.csv') as file:
+with open('./reference_lists/homonyms_list.csv') as file:
     for row in csv.reader(file, delimiter = ','):
         for item in row:
             homonymsList.append(item)

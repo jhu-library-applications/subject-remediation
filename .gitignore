@@ -52,16 +52,6 @@ data/*
 .profile
 *.csv
 *.json
-*.nt
-*.txt
 local/*
 *.xml
 *.xlsx
-figuringout.py
-
-!homonyms.csv
-!dataCite_example-complexvalues.xml
-!dataCite_example-datapaper.xml
-!dataCite_example-full.xml
-!dataCite_example-geobox.xml
-!dataCite_example-software.xml

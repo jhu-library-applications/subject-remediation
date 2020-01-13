@@ -4,8 +4,8 @@ import re
 from spellchecker import SpellChecker
 
 spell = SpellChecker()
-spell.word_frequency.load_text_file('./meshwords.txt')
-spell.word_frequency.load_text_file('./FASTlist.txt')
+spell.word_frequency.load_text_file('./reference_lists/MESH_list.txt')
+spell.word_frequency.load_text_file('./reference_lists/FAST_list.txt')
 
 
 parser = argparse.ArgumentParser()
