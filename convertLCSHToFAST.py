@@ -7,7 +7,7 @@ import ast
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--file', help='enter filename with csv. optional - if not provided, the script will ask for input')
-parser.add_argument('-b', '--batch', help='Batch letter to name outputs. optional - if not provided, the script will ask for input')
+parser.add_argument('-b', '--batch', help='Batch letter & number to name outputs. optional - if not provided, the script will ask for input')
 args = parser.parse_args()
 
 if args.file:
@@ -26,7 +26,7 @@ api_base_url = "http://fast.oclc.org/searchfast/fastsuggest"
 fast_uri_base = "http://id.worldcat.org/fast/{0}"
 
 
-f = csv.writer(open('subjectMatchesToReview_Batch'+batch+'2_'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'w'))
+f = csv.writer(open('convertedMatchesToReview_Batch'+batch+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'w'))
 f.writerow(['uri']+['dc.subject']+['cleanedSubject']+['result_list']+['result_list_edited']+['match'])
 
 

@@ -37,7 +37,7 @@ with open(filename) as itemMetadataFile:
         newValue = row['newValue'].strip()
         category = row['category'].strip()
         if category == 'list':
-            newValue = re.sub(',$', '', newValue) # removes comma from end of string
+            newValue = re.sub(',$', '', newValue)  # Removes comma from end of string
             if newValue.count(',') > 0:
                 newValueList = newValue.split(',')
             elif newValue.count(r'(\n|\r\n)') > 0:

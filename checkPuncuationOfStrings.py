@@ -23,7 +23,7 @@ if args.batch:
 else:
     batch = input('Enter batch letter: ')
 
-f = csv.writer(open('02_deDuplicatedSubjects'+batch+'.csv', 'w'))
+f = csv.writer(open('02_deDuplicatedSubjects_Batch'+batch+'.csv', 'w'))
 f.writerow(['uri']+['dc.subject']+['newValue']+['check']+['category'])
 
 match1Comma_count = 0

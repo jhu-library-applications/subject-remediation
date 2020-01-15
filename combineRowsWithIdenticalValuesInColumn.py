@@ -55,7 +55,7 @@ print(df.head())
 df.to_csv('newData.csv')
 
 # do basic remediation on newValue column -get rid of extra spaces, all quotes, and capitalize first letter in string
-f = csv.writer(open('00_deDuplicatedSubjects'+batch+'.csv', 'w'))
+f = csv.writer(open('00_deDuplicatedSubjects_Batch'+batch+'.csv', 'w'))
 f.writerow(['uri']+[element]+['newValue']+['category'])
 
 with open('newData.csv') as itemMetadataFile:
