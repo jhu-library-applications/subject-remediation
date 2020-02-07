@@ -33,8 +33,10 @@ api_base_url = "http://fast.oclc.org/searchfast/fastsuggest"
 mesh_url = 'https://id.nlm.nih.gov/mesh/lookup/descriptor?label='
 fast_uri_base = "http://id.worldcat.org/fast/{0}"
 
-f1name = 'subjectMatchesToReview_Batch'+batch+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv'
-f2name = 'potentialLCSHToConvert_Batch'+batch+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv'
+dt = datetime.now().strftime('%Y-%m-%d %H.%M.%S')
+
+f1name = 'subjectMatchesToReview_Batch'+batch+'_'+dt+'.csv'
+f2name = 'potentialLCSHToConvert_Batch'+batch+'_'+dt+'.csv'
 
 f = open(f1name, 'w')
 w1 = csv.writer(f)

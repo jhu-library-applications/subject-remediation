@@ -2,6 +2,7 @@ import csv
 import argparse
 import re
 from spellchecker import SpellChecker
+from datetime import datetime
 
 spell = SpellChecker()
 spell.word_frequency.load_text_file('./reference_lists/MESH_list.txt')
@@ -23,7 +24,9 @@ if args.batch:
 else:
     batch = input('Enter batch letter: ')
 
-f = csv.writer(open('02_deDuplicatedSubjects_Batch'+batch+'.csv', 'w'))
+dt = datetime.now().strftime('%Y-%m-%d %H.%M.%S')
+
+f = csv.writer(open('02_deDuplicatedSubjects_Batch'+batch+'_'+dt+'.csv', 'w'))
 f.writerow(['uri']+['dc.subject']+['newValue']+['check']+['category'])
 
 match1Comma_count = 0

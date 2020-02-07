@@ -1,10 +1,11 @@
 import csv
 import argparse
 import re
+from datetime import datetime
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-f', '--file', help='enter filename with csv. optional - if not provided, the script will ask for input')
-parser.add_argument('-b', '--batch', help='Batch letter to name outputs. optional - if not provided, the script will ask for input')
+parser.add_argument('-f', '--file', help='enter filename with csv.')
+parser.add_argument('-b', '--batch', help='Batch letter to name outputs.')
 args = parser.parse_args()
 
 if args.file:
@@ -17,10 +18,12 @@ if args.batch:
 else:
     batch = input('Enter batch letter: ')
 
-f = csv.writer(open('subjectsToCheckAgainstFASTAndMESH_Batch'+batch+'.csv', 'w'))
+dt = datetime.now().strftime('%Y-%m-%d %H.%M.%S')
+
+f = csv.writer(open('subjectsToCheckAgainstFASTAndMESH_Batch'+batch+'_'+dt+'.csv', 'w'))
 f.writerow(['uri']+['dc.subject']+['cleanedSubject'])
 
-f2 = csv.writer(open('listSubjectsToCheckAgainstFASTAndMESH_Batch'+batch+'.csv', 'w'))
+f2 = csv.writer(open('listSubjectsToCheckAgainstFASTAndMESH_Batch'+batch+'_'+dt+'.csv', 'w'))
 f2.writerow(['uri']+['dc.subject']+['cleanedSubject'])
 
 

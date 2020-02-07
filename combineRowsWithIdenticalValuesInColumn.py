@@ -3,11 +3,12 @@ import csv
 import argparse
 import chardet
 import re
+from datetime import datetime
 
 pd.__version__
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--file')
-parser.add_argument('-b', '--batch', help='Batch letter to name outputs. optional - if not provided, the script will ask for input')
+parser.add_argument('-b', '--batch', help='Batch letter to name outputs')
 parser.add_argument('-k', '--element')
 args = parser.parse_args()
 
@@ -33,12 +34,14 @@ def find_encoding(fname):
 
 
 my_encoding = find_encoding(filename)
+dt = datetime.now().strftime('%Y-%m-%d %H.%M.%S')
 
 print(my_encoding)
 df = pd.read_csv(filename, encoding=my_encoding)
 
 print(df.head())
-# combine identicial element strings in different rows into one row; in that row create column with list of URI associated with that string
+# Combine identical element values from different rows into one row.
+# In that row create column with list of URI associated with that value.
 pivoted = pd.pivot_table(df, index=[element], values='uri', aggfunc=lambda x: ','.join(str(v) for v in x))
 print(pivoted.sort_values(ascending=True, by=element).head())
 
@@ -52,10 +55,11 @@ df = df[df[element] != 'en_US']
 print(df.head())
 
 
-df.to_csv('newData.csv')
+df.to_csv('newData_'+dt+'.csv')
 
-# do basic remediation on newValue column -get rid of extra spaces, all quotes, and capitalize first letter in string
-f = csv.writer(open('00_deDuplicatedSubjects_Batch'+batch+'.csv', 'w'))
+# Do basic remediation on newValue column.
+# Get rid of extra spaces, all quotes, capitalize first letter in string.
+f = csv.writer(open('00_deDuplicatedSubjects_Batch'+batch+'_'+dt+'.csv', 'w'))
 f.writerow(['uri']+[element]+['newValue']+['category'])
 
 with open('newData.csv') as itemMetadataFile:

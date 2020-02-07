@@ -19,11 +19,12 @@ if args.batch:
 else:
     batch = input('Enter batch letter: ')
 
+dt = datetime.now().strftime('%Y-%m-%d %H.%M.%S')
 
-f3 = csv.writer(open('subjectsToUpload_Batch'+batch+'_'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'w'))
+f3 = csv.writer(open('subjectsToUpload_Batch'+batch+'_'+dt+'.csv', 'w'))
 f3.writerow(['oldKey']+['oldSubject']+['newKey']+['newSubject'])
 
-f4 = csv.writer(open('subjectsToSplitAndUpload_Batch'+batch+'_'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'w'))
+f4 = csv.writer(open('subjectsToSplitAndUpload_Batch'+batch+'_'+dt+'.csv', 'w'))
 f4.writerow(['oldKey']+['oldSubject']+['newKey']+['newSubject'])
 
 

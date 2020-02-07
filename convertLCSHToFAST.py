@@ -25,8 +25,8 @@ api_base_url = "http://fast.oclc.org/searchfast/fastsuggest"
 # For constructing links to FAST.
 fast_uri_base = "http://id.worldcat.org/fast/{0}"
 
-
-f = csv.writer(open('convertedMatchesToReview_Batch'+batch+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'w'))
+dt = datetime.now().strftime('%Y-%m-%d %H.%M.%S')
+f = csv.writer(open('convertedMatchesToReview_Batch'+batch+'_'+dt+'.csv', 'w'))
 f.writerow(['uri']+['dc.subject']+['cleanedSubject']+['result_list']+['result_list_edited']+['match'])
 
 

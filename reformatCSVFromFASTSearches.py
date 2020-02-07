@@ -22,13 +22,15 @@ if args.batch:
 else:
     batch = input('Enter batch letter: ')
 
-subjectFile = 'subjectsCombined'+'_Batch'+batch+'_'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv'
+dt = datetime.now().strftime('%Y-%m-%d %H.%M.%S')
+
+subjectFile = 'subjectsCombined'+'_Batch'+batch+'_'+dt+'.csv'
 print(subjectFile)
 
 f = csv.writer(open(subjectFile, 'w'))
 f.writerow(['oldKey']+['oldSubject']+['newKey']+['newSubject'])
 
-f2 = csv.writer(open('errors'+'_Batch'+batch+'_'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'w'))
+f2 = csv.writer(open('errors'+'_Batch'+batch+'_'+dt+'.csv', 'w'))
 f2.writerow(['oldSubject']+['cleanedSubject']+['results']+['selection'])
 
 error = 0

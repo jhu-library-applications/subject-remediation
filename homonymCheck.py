@@ -1,9 +1,9 @@
 import csv
 import argparse
-
+from datetime import datetime
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-f', '--file', help='enter filename with csv. optional - if not provided, the script will ask for input')
+parser.add_argument('-f', '--file', help='enter filename with csv extension.')
 args = parser.parse_args()
 
 if args.file:
@@ -21,7 +21,10 @@ with open('./reference_lists/homonyms_list.csv') as file:
 filenamePart = filename[:-4]
 print(filenamePart)
 
-f = csv.writer(open(filenamePart+'WithHC.csv', 'w'))
+dt = datetime.now().strftime('%Y-%m-%d %H.%M.%S')
+
+
+f = csv.writer(open(filenamePart+'WithHC_'+dt+'.csv', 'w'))
 f.writerow(['uri']+['dc.subject']+['cleanedSubject']+['homonym'])
 
 total = 0
