@@ -45,7 +45,7 @@ with open(filename) as itemMetadataFile:
                     f3.writerow([oldKey]+[oldSubject]+[newKey]+[newSubject])
                 else:
                     f4.writerow([oldKey]+[oldSubject]+[newKey]+[newSubject])
-        except:
+        except SyntaxError:
             if isinstance(newSubject, str):
                 f3.writerow([oldKey]+[oldSubject]+[newKey]+[newSubject])
             else:

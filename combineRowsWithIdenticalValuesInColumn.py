@@ -73,24 +73,23 @@ with open('newData.csv') as itemMetadataFile:
         match = re.search(r'^[a-z]', newValue)
         try:
             newValue = newValue.strip()
-        except:
+        except ValueError:
             pass
         try:
-            if newValue.find("  ") != -1:
-                newValue = newValue.replace("  ", " ")  # removes extra blanks
-                print(newValue)
-        except:
+            newValue = newValue.replace("  ", " ")  # removes extra blanks
+            print(newValue)
+        except ValueError:
             pass
         try:
             if newValue.find('\"') != -1:
                 newValue = newValue.replace('\"', '')  # delete quote marks
                 print(newValue)
-        except:
+        except ValueError:
             pass
         try:
             if match:
                 newValue = newValue[:1].upper() + newValue[1:]  # capitalize first letter in first word
                 print(newValue)
-        except:
+        except ValueError:
             pass
         f.writerow([uri]+[original_element]+[newValue]+[category])

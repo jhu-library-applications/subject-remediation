@@ -22,8 +22,6 @@ filenamePart = filename[:-4]
 print(filenamePart)
 
 dt = datetime.now().strftime('%Y-%m-%d %H.%M.%S')
-
-
 f = csv.writer(open(filenamePart+'WithHC_'+dt+'.csv', 'w'))
 f.writerow(['uri']+['dc.subject']+['cleanedSubject']+['homonym'])
 
